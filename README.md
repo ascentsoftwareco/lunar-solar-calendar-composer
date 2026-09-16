@@ -15,5 +15,8 @@ Features:
 - User decides the name of the months and weekdays.
 - User decide what day on the Gregorian calendar to begin each month, and whether the months have 29 or 30 days.
 
+Example:
+<img width="3375" height="2625" alt="April-2027-month-grid-11x8 5in" src="https://github.com/user-attachments/assets/ee7f85fa-609d-420c-96ae-ec423a27d55b" />
+
 Vibe coded as a Claude artifact.
 
