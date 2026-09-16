@@ -1,0 +1,1337 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Lunisolar Grid Composer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink:#1c2027;
+    --ink-soft:#454b57;
+    --paper:#f4f5f7;
+    --panel:#ffffff;
+    --panel-2:#eef0f4;
+    --border:#d9dce2;
+    --border-strong:#b7bcc6;
+    --muted:#6b7280;
+    --accent-solar:#a8721e;
+    --accent-solar-soft:#f1e2c8;
+    --accent-lunar:#3f4f82;
+    --accent-lunar-soft:#dde2f2;
+    --accent:#3f4f82;
+    --danger:#a5402b;
+    --focus:#3f4f82;
+    --shadow: 0 1px 2px rgba(20,22,30,.06), 0 8px 24px -12px rgba(20,22,30,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e9e8e3;
+      --ink-soft:#b9bcc4;
+      --paper:#14161b;
+      --panel:#1b1e25;
+      --panel-2:#22252d;
+      --border:#31353f;
+      --border-strong:#454a56;
+      --muted:#9aa0ab;
+      --accent-solar:#d8a24e;
+      --accent-solar-soft:#3a3122;
+      --accent-lunar:#8fa0d9;
+      --accent-lunar-soft:#242a3d;
+      --accent:#8fa0d9;
+      --danger:#e08268;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e9e8e3;
+    --ink-soft:#b9bcc4;
+    --paper:#14161b;
+    --panel:#1b1e25;
+    --panel-2:#22252d;
+    --border:#31353f;
+    --border-strong:#454a56;
+    --muted:#9aa0ab;
+    --accent-solar:#d8a24e;
+    --accent-solar-soft:#3a3122;
+    --accent-lunar:#8fa0d9;
+    --accent-lunar-soft:#242a3d;
+    --accent:#8fa0d9;
+    --danger:#e08268;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 30px -14px rgba(0,0,0,.6);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:14px;
+    line-height:1.4;
+  }
+  ::selection{ background:var(--accent-lunar-soft); }
+
+  .app{ max-width:1520px; margin:0 auto; padding:20px 20px 48px; }
+
+  .topbar{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    flex-wrap:wrap;
+    padding-bottom:16px; margin-bottom:20px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand{ display:flex; flex-direction:column; gap:2px; }
+  .brand h1{
+    margin:0; font-family:"Fraunces", Georgia, serif; font-weight:650;
+    font-size:26px; letter-spacing:.01em; text-wrap:balance;
+  }
+  .brand p{ margin:0; color:var(--muted); font-size:12.5px; }
+  .brand .lede{ color:var(--muted); }
+  .topbar .meta{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--muted);
+    text-align:right; font-variant-numeric:tabular-nums;
+  }
+
+  .workspace{
+    display:grid;
+    grid-template-columns: minmax(320px, 400px) 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .workspace{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+  }
+
+  .controls{ display:flex; flex-direction:column; gap:14px; }
+
+  details.section{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  details.section > summary{
+    list-style:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:13px 16px;
+    font-weight:600; font-size:13px; letter-spacing:.02em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  details.section > summary::-webkit-details-marker{ display:none; }
+  details.section > summary .chev{
+    width:9px; height:9px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
+    transform:rotate(-45deg); transition:transform .15s ease; flex:none;
+  }
+  details.section[open] > summary .chev{ transform:rotate(45deg); }
+  details.section .section-body{ padding:4px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:12px; color:var(--muted); font-weight:500; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row > .field{ flex:1; min-width:0; }
+  .hint{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+
+  input[type=text], input[type=number], select, textarea{
+    font-family:inherit; font-size:13px; color:var(--ink);
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:6px; padding:7px 9px; width:100%;
+  }
+  textarea{ resize:vertical; min-height:44px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible{
+    outline:2px solid var(--focus); outline-offset:1px;
+  }
+
+  .checkline{ display:flex; align-items:center; gap:8px; font-size:13px; }
+  .checkline input{ width:auto; }
+
+  .btn{
+    font-family:inherit; font-size:12.5px; font-weight:600; letter-spacing:.02em;
+    border:1px solid var(--border-strong); background:var(--panel-2); color:var(--ink);
+    border-radius:7px; padding:8px 13px; cursor:pointer;
+  }
+  .btn:hover{ border-color:var(--accent); }
+  .btn-primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:5px 9px; font-size:11.5px; }
+  .btn[disabled]{ opacity:.55; cursor:not-allowed; }
+
+  .lunar-status{
+    font-size:12px; background:var(--accent-lunar-soft); color:var(--accent-lunar);
+    border-radius:6px; padding:8px 10px; font-family:"IBM Plex Mono", monospace;
+  }
+
+  .ordinal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .ordinal-grid input{ font-size:11px; padding:5px 6px; text-align:center; }
+
+  .table-wrap{ max-height:420px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+  table.daytable{ border-collapse:collapse; width:100%; font-size:12px; }
+  table.daytable thead th{
+    position:sticky; top:0; background:var(--panel-2); z-index:1;
+    text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--muted); padding:7px 8px; border-bottom:1px solid var(--border);
+  }
+  table.daytable td{ padding:4px 6px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  table.daytable tr:last-child td{ border-bottom:none; }
+  table.daytable .daynum{
+    font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums;
+    text-align:right; color:var(--ink-soft); width:26px;
+  }
+  table.daytable .wk{ color:var(--muted); font-size:10.5px; width:34px; }
+  table.daytable input{ padding:5px 6px; font-size:12px; }
+  table.daytable .tag-cell input{ width:52px; text-align:center; }
+  table.daytable .body-cell textarea{
+    min-height:26px; height:26px; padding:5px 6px; font-size:12px; line-height:1.35;
+    resize:vertical; font-family:inherit; white-space:pre-wrap;
+  }
+  table.daytable .lunar-cell input{ color:var(--accent-lunar); }
+  table.daytable tr.overflow-row .daynum{ color:var(--danger); }
+
+  .proof-col{ display:flex; flex-direction:column; gap:12px; position:sticky; top:16px; }
+  .proof-toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:12px 14px;
+  }
+  .proof-toolbar .dims{
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .proof-frame{
+    padding:16px; display:flex; justify-content:center; overflow:auto;
+  }
+  .legend{
+    display:flex; gap:16px; padding:0 14px 14px; font-size:11.5px; color:var(--muted); flex-wrap:wrap;
+  }
+  .legend .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+  .legend .dot.solar{ background:var(--accent-solar); }
+  .legend .dot.lunar{ background:var(--accent-lunar); }
+  .legend .dot.guide{ background:none; border:1.5px dashed var(--accent-lunar); border-radius:2px; width:9px; height:9px; }
+
+  .footer-note{
+    margin-top:14px; font-size:11.5px; color:var(--muted); line-height:1.6;
+  }
+  .footer-note code{ font-family:"IBM Plex Mono",monospace; background:var(--panel-2); padding:1px 5px; border-radius:4px; }
+
+  .cell-popover{
+    position:fixed; z-index:50; display:none; flex-direction:column; gap:8px;
+    width:240px; max-width:calc(100vw - 16px);
+    background:var(--panel); border:1px solid var(--border-strong); border-radius:8px;
+    box-shadow:var(--shadow); padding:10px 12px 12px;
+  }
+  .cell-popover.open{ display:flex; }
+  .cell-popover-head{ display:flex; align-items:center; justify-content:space-between; }
+  .cell-popover-title{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:var(--ink-soft); }
+  .cell-popover-close{
+    border:none; background:none; color:var(--muted); font-size:18px; line-height:1;
+    cursor:pointer; padding:0 2px;
+  }
+  .cell-popover-close:hover{ color:var(--ink); }
+  .cell-popover label{ display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--muted); font-weight:500; }
+  .cell-popover input, .cell-popover textarea{
+    font-family:inherit; font-size:13px; color:var(--ink);
+    background:var(--panel-2); border:1px solid var(--border-strong);
+    border-radius:6px; padding:6px 8px; width:100%;
+  }
+  .cell-popover textarea{ resize:vertical; min-height:44px; }
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <h1>Lunisolar Grid Composer</h1>
+      <p class="lede">Build one printable month page — Gregorian dates on top, a hand-tracked lunar month underneath — sized to the WallCalendarsBlank month-grid templates.</p>
+    </div>
+    <div class="meta" id="topMeta">—</div>
+  </div>
+
+  <div class="workspace">
+    <div class="controls" id="controls"></div>
+
+    <div class="proof-col">
+      <div class="panel proof-toolbar">
+        <div>
+          <button class="btn btn-primary" id="exportBtn">Export PNG</button>
+          <span class="hint" id="exportStatus" style="margin-left:8px;"></span>
+        </div>
+        <div class="dims" id="dimsReadout">—</div>
+      </div>
+      <div class="panel proof-frame">
+        <div id="proofMount"></div>
+      </div>
+      <div class="panel legend">
+        <span><span class="dot solar"></span>Gregorian day</span>
+        <span><span class="dot lunar"></span>Lunar day · month (typed or auto-filled)</span>
+        <span><span class="dot guide"></span>Safe-area guide (screen only, never exported)</span>
+      </div>
+      <p class="footer-note">
+        Click any day in the preview above to edit its tag, text and lunar date right there — the day table
+        below stays in sync. The blue outline above is a non-printing guide: the outer line is the page edge, the dashed inner line is the
+        safe area used by the <code>WallCalendarsBlank&nbsp;11x8.5in</code> and
+        <code>WallCalendarsBlank&nbsp;14x11.5in</code> Month Grid templates. Keep header, grid and footnote inside it if
+        you plan to align this page with that printed stock. The exported PNG carries only your chosen background —
+        color, texture or image — at the template's native 300&nbsp;dpi canvas size; no guide lines or template art are included.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="exportSandbox" style="position:fixed; left:-999999px; top:0; pointer-events:none;"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- template geometry, measured from the WallCalendarsBlank source PNGs ----------
+     (canvas + safe-area size only — the reference art itself is no longer drawn) */
+  var TEMPLATES = {
+    '11x8.5': {
+      label: '11 × 8.5 in Month Grid',
+      fullW: 3375, fullH: 2625,
+      safe: { left: 61.5, top: 143.5, right: 3313.5, bottom: 2562.5 }
+    },
+    '14x11.5': {
+      label: '14 × 11.5 in Month Grid',
+      fullW: 4275, fullH: 3525,
+      safe: { left: 96.5, top: 178.5, right: 4177.5, bottom: 3428 }
+    }
+  };
+
+  var WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var WEEKDAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var ORDINALS_DEFAULT = ['First Day','Second Day','Third Day','Fourth Day','Fifth Day','Sixth Day','Seventh Day'];
+  var STORE_KEY = 'lunisolar-grid-composer-v1';
+
+  /* ---------- state ---------- */
+  var state = null;
+
+  function freshCells(dim){
+    var c = {};
+    for(var d=1; d<=dim; d++) c[d] = { tag:'', body:'', lunar:'' };
+    return c;
+  }
+
+  function defaultState(){
+    var now = new Date(2026,8,1); // September 2026 — seeded example
+    var dim = daysInMonth(now.getFullYear(), now.getMonth());
+    var s = {
+      templateKey: '11x8.5',
+      year: now.getFullYear(),
+      month: now.getMonth(),
+      startOverride: null,
+      headerLeftText: '',
+      altLine1: 'Elul – Tishrei 5786/5787',
+      altLine2: 'Season of Repentance',
+      showOrdinal: true,
+      ordinalLabels: ORDINALS_DEFAULT.slice(),
+      footnote: 'Prayer meeting Wednesdays, 7:00 PM · Fellowship hall reserved the 19th',
+      cells: freshCells(dim),
+      lunarLastMonth: null,
+      background: { color: '#ffffff', imageDataUrl: null, imageName: '', fit: 'cover', opacity: 100 },
+      pages: {}
+    };
+    // seed example content
+    s.cells[1].tag = '🕯️';
+    s.cells[1].body = 'New month prayer gathering';
+    s.cells[6].tag = '✝';
+    s.cells[6].body = 'Communion Sunday';
+    s.cells[13].tag = '✝';
+    s.cells[20].tag = '✝';
+    s.cells[27].tag = '✝';
+    s.cells[19].body = 'Fellowship dinner, 6 PM';
+    applyLunarFill(s, 1, 'Elul', true);
+    snapshotPage(s, s.year, s.month);
+    return s;
+  }
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      if(!parsed || typeof parsed !== 'object' || !parsed.cells) return defaultState();
+      if(!parsed.background) parsed.background = { color:'#ffffff', imageDataUrl:null, imageName:'', fit:'cover', opacity:100 };
+      if(!parsed.pages){
+        parsed.pages = {};
+        snapshotPage(parsed, parsed.year, parsed.month);
+      }
+      return parsed;
+    }catch(e){ return defaultState(); }
+  }
+
+  var saveTimer = null;
+  function persist(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+    }, 250);
+  }
+
+  /* ---------- date helpers ---------- */
+  function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+  function firstWeekday(y,m){ return new Date(y, m, 1).getDay(); }
+
+  function ensureCellCount(){
+    var dim = daysInMonth(state.year, state.month);
+    var cells = {};
+    for(var d=1; d<=dim; d++){
+      cells[d] = state.cells[d] || { tag:'', body:'', lunar:'' };
+    }
+    state.cells = cells;
+  }
+
+  /* ---------- per-month page cache (so switching month/year doesn't wipe data) ---------- */
+  function pageKeyOf(y,m){ return y+'-'+m; }
+
+  function snapshotPage(s, y, m){
+    if(!s.pages) s.pages = {};
+    s.pages[pageKeyOf(y,m)] = {
+      startOverride: s.startOverride,
+      headerLeftText: s.headerLeftText,
+      altLine1: s.altLine1,
+      altLine2: s.altLine2,
+      footnote: s.footnote,
+      cells: s.cells,
+      lunarLastMonth: s.lunarLastMonth
+    };
+  }
+
+  function switchToPage(s, y, m){
+    if(!s.pages) s.pages = {};
+    var key = pageKeyOf(y,m);
+    var pg = s.pages[key];
+    if(!pg){
+      pg = {
+        startOverride: null,
+        headerLeftText: '',
+        altLine1: '',
+        altLine2: '',
+        footnote: '',
+        cells: freshCells(daysInMonth(y,m)),
+        lunarLastMonth: null
+      };
+      s.pages[key] = pg;
+    }
+    s.year = y; s.month = m;
+    s.startOverride = pg.startOverride;
+    s.headerLeftText = pg.headerLeftText;
+    s.altLine1 = pg.altLine1;
+    s.altLine2 = pg.altLine2;
+    s.footnote = pg.footnote;
+    s.cells = pg.cells;
+    s.lunarLastMonth = pg.lunarLastMonth;
+  }
+
+  /* ---------- lunar autofill ---------- */
+  function applyLunarFill(s, startDay, monthName, silent){
+    var dim = daysInMonth(s.year, s.month);
+    if(startDay < 1 || startDay > dim || !monthName) return false;
+
+    // gap-fill: exactly one blank day between the previous run and this start
+    if(s.lunarLastMonth && startDay - s.lunarLastMonth.lastFilledDay === 2){
+      var gapDay = startDay - 1;
+      if(gapDay >= 1 && gapDay <= dim && !s.cells[gapDay].lunar){
+        s.cells[gapDay].lunar = '30 ' + s.lunarLastMonth.name;
+      }
+    }
+    var lastFilled = startDay;
+    for(var i=0; i<29; i++){
+      var d = startDay + i;
+      if(d > dim) break;
+      s.cells[d].lunar = (i+1) + ' ' + monthName;
+      lastFilled = d;
+    }
+    s.lunarLastMonth = { name: monthName, lastFilledDay: lastFilled };
+    return true;
+  }
+
+  // Fills the run of Gregorian days *before* beforeDay with the tail end of a
+  // previous lunar month, counting backward from endNumber down to day 1 of the page.
+  function applyLunarBackfill(s, beforeDay, endNumber, monthName){
+    var dim = daysInMonth(s.year, s.month);
+    if(beforeDay < 2 || beforeDay > dim+1 || !monthName || !endNumber || endNumber < 1) return false;
+    var num = endNumber;
+    var filled = 0;
+    for(var d = beforeDay-1; d >= 1; d--){
+      if(num < 1) break;
+      s.cells[d].lunar = num + ' ' + monthName;
+      num--; filled++;
+    }
+    return filled > 0;
+  }
+
+  /* ---------- grid geometry ---------- */
+  function computeSlots(){
+    var dim = daysInMonth(state.year, state.month);
+    var start = state.startOverride == null ? firstWeekday(state.year, state.month) : state.startOverride;
+    var total = start + dim;
+    var overflow = Math.max(0, total - 35);
+    var normalCount = dim - overflow;
+
+    var slots = [];
+    for(var i=0;i<35;i++){ slots.push({ pos:i, row:Math.floor(i/7), col:i%7, day:null, split:null }); }
+    for(var d=1; d<=normalCount; d++){ slots[start + d - 1].day = d; }
+    for(var k=0; k<overflow; k++){
+      var day = normalCount + k + 1;
+      slots[28+k].split = day;
+    }
+    return { slots:slots, dim:dim, start:start, overflow:overflow };
+  }
+
+  function emptyRuns(slots){
+    var runs = [];
+    for(var row=0; row<5; row++){
+      var runStart = -1;
+      for(var col=0; col<=7; col++){
+        var s = col<7 ? slots[row*7+col] : null;
+        var isEmpty = s && s.day==null && s.split==null;
+        if(isEmpty && runStart===-1) runStart = col;
+        if((!isEmpty || col===7) && runStart!==-1){
+          runs.push({ row:row, fromCol:runStart, toCol:col-1 });
+          runStart = -1;
+        }
+      }
+    }
+    return runs;
+  }
+
+  /* ---------- DOM building ---------- */
+  function el(tag, style, attrs, kids){
+    var e = document.createElement(tag);
+    if(style) for(var k in style){
+      if(k.indexOf('--') === 0) e.style.setProperty(k, style[k]);
+      else e.style[k] = style[k];
+    }
+    if(attrs) for(var a in attrs) { if(a==='text') e.textContent = attrs[a]; else e.setAttribute(a, attrs[a]); }
+    if(kids) kids.forEach(function(c){ if(c) e.appendChild(c); });
+    return e;
+  }
+
+  function metrics(tpl, scale){
+    var safeW = (tpl.safe.right - tpl.safe.left) * scale;
+    var safeH = (tpl.safe.bottom - tpl.safe.top) * scale;
+    return {
+      scale: scale,
+      safeW: safeW, safeH: safeH,
+      headerH: safeH*0.122,
+      weekdayH: safeH*0.040,
+      ordinalH: state.showOrdinal ? safeH*0.038 : 0,
+      footnoteH: safeH*0.040,
+      gap: Math.max(1, safeH*0.006),
+      gapTight: Math.max(1, safeH*0.002),
+      border: Math.max(1, safeW*0.0016),
+      monthFont: safeW*0.046,
+      altFont1: safeW*0.044,
+      altFont2: safeW*0.022,
+      weekdayFont: safeW*0.0185,
+      ordinalFont: safeW*0.0185,
+      dayFont: safeW*0.0225,
+      tagFont: safeW*0.020,
+      bodyFont: safeW*0.0125,
+      lunarFont: safeW*0.0122,
+      footnoteFont: safeW*0.0145,
+      notesFont: safeW*0.0135,
+      pad: safeW*0.0075
+    };
+  }
+
+  function cellInner(m, dayNum, compact, interactive){
+    var cell = state.cells[dayNum] || { tag:'', body:'', lunar:'' };
+    var wrap = el('div', {
+      position:'relative', width:'100%', height:'100%',
+      fontFamily:'"IBM Plex Sans", sans-serif'
+    });
+    if(interactive){
+      wrap.style.cursor = 'pointer';
+      wrap.addEventListener('mouseenter', function(){ wrap.style.background = 'rgba(63,79,130,.08)'; });
+      wrap.addEventListener('mouseleave', function(){ wrap.style.background = ''; });
+      wrap.addEventListener('click', function(e){ e.stopPropagation(); openCellEditor(dayNum, wrap); });
+    }
+    wrap.appendChild(el('div', {
+      position:'absolute', left:m.pad*0.7+'px', top:m.pad*0.55+'px',
+      fontFamily:'"IBM Plex Mono", monospace', fontWeight:'600',
+      fontSize:(compact? m.dayFont*0.72 : m.dayFont)+'px', color:'var(--accent-solar)',
+      lineHeight:'1'
+    }, { text:String(dayNum) }));
+    if(cell.tag){
+      wrap.appendChild(el('div', {
+        position:'absolute', right:m.pad*0.6+'px', top:m.pad*0.5+'px',
+        fontSize:(compact? m.tagFont*0.75 : m.tagFont)+'px', lineHeight:'1', maxWidth:'46%',
+        textAlign:'right', overflow:'hidden', color:'#000000'
+      }, { text: cell.tag }));
+    }
+    if(cell.body && !compact){
+      wrap.appendChild(el('div', {
+        position:'absolute', left:m.pad*0.7+'px', right:m.pad*0.6+'px',
+        top:(m.dayFont*1.05+m.pad*0.6)+'px', bottom:(m.lunarFont*1.5+m.pad*0.5)+'px',
+        fontSize:m.bodyFont+'px', color:'var(--ink)', lineHeight:'1.22',
+        overflow:'visible', whiteSpace:'pre-wrap'
+      }, { text: cell.body }));
+    }
+    if(cell.lunar){
+      wrap.appendChild(el('div', {
+        position:'absolute', left:m.pad*0.7+'px', right:m.pad*0.6+'px', bottom:m.pad*0.4+'px',
+        fontSize:(compact? m.lunarFont*0.95 : m.lunarFont*1.1)+'px', color:'var(--accent-lunar)',
+        fontFamily:'"Fraunces", Georgia, serif', fontWeight:'500',
+        lineHeight:'1', overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis'
+      }, { text: cell.lunar }));
+    }
+    return wrap;
+  }
+
+  function buildGridCell(m, slot, interactive){
+    var base = {
+      position:'relative', borderRight:m.border+'px solid var(--grid-line)',
+      borderBottom:m.border+'px solid var(--grid-line)',
+      background:'#ffffff', overflow:'hidden'
+    };
+    if(slot.col===0) base.borderLeft = m.border+'px solid var(--grid-line)';
+    if(slot.row===0) base.borderTop = m.border+'px solid var(--grid-line)';
+
+    var box = el('div', base);
+    box.style.gridColumn = (slot.col+1)+' / '+(slot.col+2);
+    box.style.gridRow = (slot.row+1)+' / '+(slot.row+2);
+
+    if(slot.day==null && slot.split==null) return null; // handled by notes merge
+
+    if(slot.split==null){
+      box.appendChild(cellInner(m, slot.day, false, interactive));
+    } else {
+      var half = Math.floor(1000)/1000;
+      var top = el('div', { position:'absolute', left:0, right:0, top:0, height:'50%', borderBottom:(m.border*0.7)+'px dashed var(--grid-line)' });
+      var bot = el('div', { position:'absolute', left:0, right:0, bottom:0, height:'50%' });
+      top.appendChild(cellInner(m, slot.day, true, interactive));
+      bot.appendChild(cellInner(m, slot.split, true, interactive));
+      box.appendChild(top);
+      box.appendChild(bot);
+    }
+    return box;
+  }
+
+  function buildNotesCell(m, run){
+    var box = el('div', {
+      position:'relative',
+      borderRight:m.border+'px solid var(--grid-line)',
+      borderBottom:m.border+'px solid var(--grid-line)',
+      borderTop: run.row===0 ? m.border+'px solid var(--grid-line)' : '',
+      borderLeft: run.fromCol===0 ? m.border+'px solid var(--grid-line)' : '',
+      background:'var(--notes-bg)'
+    });
+    box.style.gridColumn = (run.fromCol+1)+' / '+(run.toCol+2);
+    box.style.gridRow = (run.row+1)+' / '+(run.row+2);
+    box.appendChild(el('div', {
+      position:'absolute', left:m.pad*0.7+'px', top:m.pad*0.5+'px',
+      fontSize:m.notesFont+'px', fontWeight:'600', letterSpacing:'.03em',
+      textTransform:'uppercase', color:'var(--muted)'
+    }, { text:'Notes:' }));
+    return box;
+  }
+
+  function headerRow(m){
+    var wrap = el('div', {
+      display:'flex', alignItems:'flex-start', justifyContent:'space-between',
+      height:m.headerH+'px', padding:'0 '+m.pad+'px', gap:m.pad*2+'px'
+    });
+    var monthLabel = state.headerLeftText && state.headerLeftText.trim()
+      ? state.headerLeftText
+      : (MONTHS[state.month] + ' ' + state.year);
+    var left = el('div', { display:'flex', flexDirection:'column', justifyContent:'center', minWidth:0 });
+    left.appendChild(el('div', {
+      fontFamily:'"Fraunces", Georgia, serif', fontWeight:'650',
+      fontSize:m.monthFont+'px', color:'var(--ink)', lineHeight:'1.2',
+      whiteSpace:'nowrap', overflowX:'hidden', overflowY:'visible', textOverflow:'ellipsis'
+    }, { text: monthLabel }));
+
+    var right = el('div', { display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'center', textAlign:'right', minWidth:0, maxWidth:'62%' });
+    if(state.altLine1){
+      right.appendChild(el('div', {
+        fontFamily:'"Fraunces", Georgia, serif', fontWeight:'600', fontStyle:'italic',
+        fontSize:m.altFont1+'px', color:'var(--accent-lunar)', lineHeight:'1.25',
+        whiteSpace:'nowrap', overflowX:'hidden', overflowY:'visible', textOverflow:'ellipsis', maxWidth:'100%',
+        paddingRight:(m.altFont1*0.14)+'px'
+      }, { text: state.altLine1 }));
+    }
+    if(state.altLine2){
+      right.appendChild(el('div', {
+        fontSize:m.altFont2+'px', color:'var(--muted)', marginTop:(m.altFont2*0.10)+'px',
+        whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%',
+        paddingRight:(m.altFont2*0.08)+'px'
+      }, { text: state.altLine2 }));
+    }
+    wrap.appendChild(left);
+    wrap.appendChild(right);
+    return wrap;
+  }
+
+  function weekdayRow(m){
+    var wrap = el('div', { display:'flex', flexDirection:'column' });
+    var row = el('div', { display:'grid', gridTemplateColumns:'repeat(7,1fr)', height:m.weekdayH+'px' });
+    WEEKDAYS.forEach(function(name){
+      row.appendChild(el('div', {
+        display:'flex', alignItems:'center', justifyContent:'center',
+        fontSize:m.weekdayFont+'px', fontWeight:'600', letterSpacing:'.05em',
+        textTransform:'uppercase', color:'var(--ink)'
+      }, { text: name }));
+    });
+    wrap.appendChild(row);
+    if(state.showOrdinal){
+      var orow = el('div', { display:'grid', gridTemplateColumns:'repeat(7,1fr)', height:m.ordinalH+'px' });
+      state.ordinalLabels.forEach(function(name){
+        orow.appendChild(el('div', {
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:m.ordinalFont+'px', fontWeight:'400', letterSpacing:'.02em',
+          color:'var(--accent-lunar)'
+        }, { text: name }));
+      });
+      wrap.appendChild(orow);
+    }
+    return wrap;
+  }
+
+  function backgroundLayer(tpl, scale){
+    var bg = state.background;
+    var layer = el('div', {
+      position:'absolute', left:0, top:0,
+      width:(tpl.fullW*scale)+'px', height:(tpl.fullH*scale)+'px',
+      background: bg.color || '#ffffff'
+    });
+    if(bg.imageDataUrl){
+      var fit = bg.fit || 'cover';
+      var img = el('div', {
+        position:'absolute', left:0, top:0, right:0, bottom:0,
+        backgroundImage:'url(' + bg.imageDataUrl + ')',
+        backgroundSize: fit==='tile' ? 'auto' : fit,
+        backgroundRepeat: fit==='tile' ? 'repeat' : 'no-repeat',
+        backgroundPosition:'center',
+        opacity: (typeof bg.opacity==='number' ? bg.opacity : 100)/100
+      });
+      layer.appendChild(img);
+    }
+    return layer;
+  }
+
+  function guideOverlay(tpl, scale){
+    var wrap = el('div', { position:'absolute', left:0, top:0, right:0, bottom:0, pointerEvents:'none' });
+    wrap.appendChild(el('div', {
+      position:'absolute', left:0, top:0,
+      width:(tpl.fullW*scale)+'px', height:(tpl.fullH*scale)+'px',
+      boxSizing:'border-box', border:'1px solid rgba(63,79,130,.35)'
+    }));
+    wrap.appendChild(el('div', {
+      position:'absolute',
+      left:(tpl.safe.left*scale)+'px', top:(tpl.safe.top*scale)+'px',
+      width:((tpl.safe.right-tpl.safe.left)*scale)+'px', height:((tpl.safe.bottom-tpl.safe.top)*scale)+'px',
+      boxSizing:'border-box', border:'1.5px dashed rgba(63,79,130,.55)'
+    }));
+    return wrap;
+  }
+
+  function buildProof(scale, includeGuides, interactive){
+    var tpl = TEMPLATES[state.templateKey];
+    var m = metrics(tpl, scale);
+
+    var page = el('div', {
+      position:'relative',
+      width:(tpl.fullW*scale)+'px', height:(tpl.fullH*scale)+'px',
+      background:'#ffffff', overflow:'hidden',
+      '--grid-line':'#26282c', '--notes-bg':'#fbfbf9', '--muted':'#7a7d84', '--ink':'#1c2027',
+      '--accent-solar':'#a8721e', '--accent-lunar':'#3f4f82'
+    });
+    page.appendChild(backgroundLayer(tpl, scale));
+
+    var content = el('div', {
+      position:'absolute',
+      left:(tpl.safe.left*scale)+'px', top:(tpl.safe.top*scale)+'px',
+      width:m.safeW+'px', height:m.safeH+'px',
+      display:'flex', flexDirection:'column'
+    });
+
+    content.appendChild(headerRow(m));
+    content.appendChild(el('div', { height:m.gapTight+'px' }));
+    content.appendChild(weekdayRow(m));
+    content.appendChild(el('div', { height:m.gap+'px' }));
+
+    var gridH = m.safeH - m.headerH - m.weekdayH - m.ordinalH - m.footnoteH - m.gapTight - m.gap*2;
+    var gridWrap = el('div', {
+      display:'grid', gridTemplateColumns:'repeat(7,1fr)', gridTemplateRows:'repeat(5,1fr)',
+      height:Math.max(0,gridH)+'px', width:'100%'
+    });
+
+    var g = computeSlots();
+    g.slots.forEach(function(slot){
+      var c = buildGridCell(m, slot, interactive);
+      if(c) gridWrap.appendChild(c);
+    });
+    emptyRuns(g.slots).forEach(function(run){
+      gridWrap.appendChild(buildNotesCell(m, run));
+    });
+
+    content.appendChild(gridWrap);
+    content.appendChild(el('div', { height:m.gap+'px' }));
+    content.appendChild(el('div', {
+      height:m.footnoteH+'px', display:'flex', alignItems:'center',
+      fontSize:m.footnoteFont+'px', color:'var(--ink)', fontStyle:'italic',
+      overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis'
+    }, { text: state.footnote || '' }));
+
+    page.appendChild(content);
+    if(includeGuides) page.appendChild(guideOverlay(tpl, scale));
+    return { page:page, grid:g };
+  }
+
+  /* ---------- preview render ---------- */
+  var proofMount = document.getElementById('proofMount');
+  var renderQueued = false;
+  function scheduleRender(){
+    if(renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(function(){
+      renderQueued = false;
+      renderPreview();
+    });
+  }
+
+  function renderPreview(){
+    var tpl = TEMPLATES[state.templateKey];
+    var frame = proofMount.parentElement;
+    var available = Math.max(280, frame.clientWidth - 32);
+    var target = Math.min(available, 900);
+    var scale = target / tpl.fullW;
+    var built = buildProof(scale, true, true);
+    proofMount.innerHTML = '';
+    proofMount.appendChild(built.page);
+
+    document.getElementById('dimsReadout').textContent =
+      tpl.fullW + '×' + tpl.fullH + ' px · 300 dpi · ' + tpl.label;
+    document.getElementById('topMeta').textContent =
+      MONTHS[state.month] + ' ' + state.year + ' · ' + built.grid.dim + ' days · starts ' + WEEKDAYS[built.grid.start] +
+      (built.grid.overflow ? ' · ' + built.grid.overflow + ' split cell' + (built.grid.overflow>1?'s':'') : '');
+  }
+
+  window.addEventListener('resize', function(){ scheduleRender(); });
+
+  /* ---------- inline cell editor (click a day in the live preview) ---------- */
+  var cellPopover = null;
+  function ensureCellPopover(){
+    if(cellPopover) return cellPopover;
+    var pop = document.createElement('div');
+    pop.className = 'cell-popover';
+    pop.innerHTML =
+      '<div class="cell-popover-head">'+
+        '<span class="cell-popover-title"></span>'+
+        '<button type="button" class="cell-popover-close" aria-label="Close">&times;</button>'+
+      '</div>'+
+      '<label>Body text<textarea rows="2" class="cp-body"></textarea></label>'+
+      '<label>Tag<input type="text" maxlength="4" class="cp-tag"></label>'+
+      '<label>Lunar day &middot; month<input type="text" class="cp-lunar"></label>';
+    document.body.appendChild(pop);
+    pop.addEventListener('click', function(e){ e.stopPropagation(); });
+    pop.querySelector('.cell-popover-close').addEventListener('click', closeCellEditor);
+    document.addEventListener('click', function(){ closeCellEditor(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeCellEditor(); });
+    cellPopover = pop;
+    return pop;
+  }
+
+  function closeCellEditor(){
+    if(!cellPopover) return;
+    cellPopover.classList.remove('open');
+  }
+
+  function openCellEditor(day, anchorEl){
+    var pop = ensureCellPopover();
+    var cell = state.cells[day];
+    if(!cell) return;
+
+    pop.querySelector('.cell-popover-title').textContent = MONTHS[state.month] + ' ' + day;
+    var tagInp = pop.querySelector('.cp-tag');
+    var bodyInp = pop.querySelector('.cp-body');
+    var lunarInp = pop.querySelector('.cp-lunar');
+    tagInp.value = cell.tag; bodyInp.value = cell.body; lunarInp.value = cell.lunar;
+
+    tagInp.oninput = function(){ cell.tag = tagInp.value; persist(); scheduleRender(); renderDayTable(); };
+    bodyInp.oninput = function(){ cell.body = bodyInp.value; persist(); scheduleRender(); renderDayTable(); };
+    lunarInp.oninput = function(){ cell.lunar = lunarInp.value; persist(); scheduleRender(); renderDayTable(); updateLunarStatus(); };
+
+    pop.classList.add('open');
+    var r = anchorEl.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 8)) + 'px';
+    pop.style.top = (r.bottom + 8) + 'px';
+    requestAnimationFrame(function(){
+      var pw = pop.offsetWidth, ph = pop.offsetHeight;
+      var left = Math.min(Math.max(8, r.left), window.innerWidth - pw - 8);
+      var top = r.bottom + 8;
+      if(top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 8);
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+    });
+
+    bodyInp.focus();
+  }
+
+  /* ---------- controls panel ---------- */
+  var controlsMount = document.getElementById('controls');
+
+  function field(labelText, inputEl, hintText){
+    var f = el('div', null, null, null);
+    f.className = 'field';
+    var lab = document.createElement('label');
+    lab.textContent = labelText;
+    f.appendChild(lab);
+    f.appendChild(inputEl);
+    if(hintText){
+      var h = document.createElement('div');
+      h.className = 'hint';
+      h.textContent = hintText;
+      f.appendChild(h);
+    }
+    return f;
+  }
+
+  function makeSection(title, openByDefault, bodyBuilder){
+    var d = document.createElement('details');
+    d.className = 'section';
+    if(openByDefault) d.open = true;
+    var summary = document.createElement('summary');
+    var t = document.createElement('span'); t.textContent = title;
+    var chev = document.createElement('span'); chev.className = 'chev';
+    summary.appendChild(t); summary.appendChild(chev);
+    d.appendChild(summary);
+    var body = document.createElement('div');
+    body.className = 'section-body';
+    bodyBuilder(body);
+    d.appendChild(body);
+    return d;
+  }
+
+  function onChange(fn){
+    return function(e){ fn(e); persist(); scheduleRender(); };
+  }
+
+  function buildPageSetup(body){
+    var tplSel = document.createElement('select');
+    Object.keys(TEMPLATES).forEach(function(k){
+      var o = document.createElement('option'); o.value = k; o.textContent = TEMPLATES[k].label;
+      if(k===state.templateKey) o.selected = true;
+      tplSel.appendChild(o);
+    });
+    tplSel.addEventListener('change', onChange(function(){ state.templateKey = tplSel.value; }));
+    body.appendChild(field('Template size', tplSel));
+
+    var row = el('div', null); row.className = 'field-row';
+
+    var yearInput = document.createElement('input');
+    yearInput.type = 'number'; yearInput.value = state.year;
+    yearInput.addEventListener('change', onChange(function(){
+      var newYear = parseInt(yearInput.value,10) || state.year;
+      if(newYear === state.year) return;
+      snapshotPage(state, state.year, state.month);
+      switchToPage(state, newYear, state.month);
+      rebuildControlsPreservingOpen();
+    }));
+    row.appendChild(field('Year', yearInput,
+      'Each month/year keeps its own tags, notes and lunar dates — switching and back restores what you entered.'));
+
+    var monthSel = document.createElement('select');
+    MONTHS.forEach(function(name, i){
+      var o = document.createElement('option'); o.value = i; o.textContent = name;
+      if(i===state.month) o.selected = true;
+      monthSel.appendChild(o);
+    });
+    monthSel.addEventListener('change', onChange(function(){
+      var newMonth = parseInt(monthSel.value,10);
+      snapshotPage(state, state.year, state.month);
+      switchToPage(state, state.year, newMonth);
+      rebuildControlsPreservingOpen();
+    }));
+    row.appendChild(field('Month', monthSel));
+    body.appendChild(row);
+
+    var startSel = document.createElement('select');
+    var autoOpt = document.createElement('option');
+    autoOpt.value = 'auto'; autoOpt.textContent = 'Auto — from year/month';
+    if(state.startOverride==null) autoOpt.selected = true;
+    startSel.appendChild(autoOpt);
+    WEEKDAYS.forEach(function(name, i){
+      var o = document.createElement('option'); o.value = i; o.textContent = 'Day 1 falls on ' + name;
+      if(state.startOverride===i) o.selected = true;
+      startSel.appendChild(o);
+    });
+    startSel.addEventListener('change', onChange(function(){
+      state.startOverride = startSel.value==='auto' ? null : parseInt(startSel.value,10);
+    }));
+    body.appendChild(field('Start day', startSel,
+      'Auto-calculates weekday of the 1st from the year and month, or pick it yourself.'));
+  }
+
+  function buildHeaderFields(body){
+    var leftInput = document.createElement('input');
+    leftInput.type = 'text'; leftInput.value = state.headerLeftText;
+    leftInput.placeholder = MONTHS[state.month] + ' ' + state.year + ' (auto)';
+    leftInput.addEventListener('input', onChange(function(){ state.headerLeftText = leftInput.value; }));
+    body.appendChild(field('Left header override', leftInput, 'Leave blank to show the month and year automatically.'));
+
+    var alt1 = document.createElement('input');
+    alt1.type = 'text'; alt1.value = state.altLine1;
+    alt1.addEventListener('input', onChange(function(){ state.altLine1 = alt1.value; }));
+    body.appendChild(field('Right header — alternate month / year', alt1, 'E.g. a Hebrew month and year for a hybrid calendar.'));
+
+    var alt2 = document.createElement('input');
+    alt2.type = 'text'; alt2.value = state.altLine2;
+    alt2.addEventListener('input', onChange(function(){ state.altLine2 = alt2.value; }));
+    body.appendChild(field('Right header — second line (optional)', alt2));
+  }
+
+  function buildWeekdayFields(body){
+    var check = document.createElement('label'); check.className = 'checkline';
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = state.showOrdinal;
+    var span = document.createElement('span'); span.textContent = 'Show ordinal day-name row (First Day, Second Day, …)';
+    check.appendChild(cb); check.appendChild(span);
+    body.appendChild(check);
+
+    var grid = document.createElement('div'); grid.className = 'ordinal-grid';
+    var inputs = [];
+    state.ordinalLabels.forEach(function(val, i){
+      var inp = document.createElement('input');
+      inp.type = 'text'; inp.value = val;
+      inp.disabled = !state.showOrdinal;
+      inp.addEventListener('input', onChange(function(){ state.ordinalLabels[i] = inp.value; }));
+      inputs.push(inp);
+      grid.appendChild(inp);
+    });
+    body.appendChild(grid);
+
+    cb.addEventListener('change', onChange(function(){
+      state.showOrdinal = cb.checked;
+      inputs.forEach(function(inp){ inp.disabled = !state.showOrdinal; });
+    }));
+  }
+
+  function buildLunarTool(body){
+    var row = el('div', null); row.className = 'field-row';
+    var dayInput = document.createElement('input');
+    dayInput.type = 'number'; dayInput.min = 1; dayInput.max = 31; dayInput.value = 1;
+    row.appendChild(field('Gregorian day = lunar day 1', dayInput));
+
+    var nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.placeholder = 'e.g. Tishrei';
+    row.appendChild(field('Lunar month name', nameInput));
+    body.appendChild(row);
+
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-primary btn-block';
+    btn.textContent = 'Set as day 1 (fills 29 days)';
+    btn.addEventListener('click', function(){
+      var d = parseInt(dayInput.value,10);
+      var name = nameInput.value.trim();
+      if(!d || !name) return;
+      var ok = applyLunarFill(state, d, name, false);
+      if(ok){ persist(); scheduleRender(); renderDayTable(); updateLunarStatus(); nameInput.value=''; }
+    });
+    body.appendChild(btn);
+
+    var divider = el('div', { borderTop:'1px solid var(--border)', margin:'2px 0' });
+    body.appendChild(divider);
+
+    var backRow = el('div', null); backRow.className = 'field-row';
+    var prevNameInput = document.createElement('input');
+    prevNameInput.type = 'text'; prevNameInput.placeholder = 'e.g. Elul';
+    backRow.appendChild(field('Previous month name', prevNameInput));
+
+    var prevEndInput = document.createElement('input');
+    prevEndInput.type = 'number'; prevEndInput.min = 1; prevEndInput.max = 30; prevEndInput.value = 29;
+    backRow.appendChild(field('Its last day #', prevEndInput));
+    body.appendChild(backRow);
+
+    var backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-block';
+    backBtn.textContent = 'Backfill before day 1 above';
+    backBtn.addEventListener('click', function(){
+      var beforeDay = parseInt(dayInput.value,10);
+      var endNum = parseInt(prevEndInput.value,10);
+      var name = prevNameInput.value.trim();
+      if(!beforeDay || !endNum || !name) return;
+      var ok = applyLunarBackfill(state, beforeDay, endNum, name);
+      if(ok){ persist(); scheduleRender(); renderDayTable(); prevNameInput.value=''; }
+    });
+    body.appendChild(backBtn);
+    body.appendChild(el('div', null, { class:'hint', text:
+      'Fills every blank day before the "Gregorian day = lunar day 1" field above, counting backward from the last-day number so the previous month’s tail lines up with day 1 of this page.' }));
+
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'btn btn-block btn-sm';
+    clearBtn.textContent = 'Clear all lunar fields on this page';
+    clearBtn.addEventListener('click', function(){
+      Object.keys(state.cells).forEach(function(k){ state.cells[k].lunar = ''; });
+      state.lunarLastMonth = null;
+      persist(); scheduleRender(); renderDayTable(); updateLunarStatus();
+    });
+    body.appendChild(clearBtn);
+
+    var status = document.createElement('div');
+    status.className = 'lunar-status';
+    status.id = 'lunarStatus';
+    body.appendChild(status);
+    updateLunarStatus();
+
+    body.appendChild(el('div', null, { class:'hint', text:
+      'Filling a new month checks the day right before your chosen start: if it is still blank and exactly one day past the last fill, it is labeled day 30 of the previous lunar month automatically.' }));
+  }
+
+  function updateLunarStatus(){
+    var elS = document.getElementById('lunarStatus');
+    if(!elS) return;
+    elS.textContent = state.lunarLastMonth
+      ? 'Last filled: ' + state.lunarLastMonth.name + ', through day ' + state.lunarLastMonth.lastFilledDay + ' of this Gregorian month.'
+      : 'No lunar month started on this page yet.';
+  }
+
+  var dayTableBody = null;
+  function buildDayTable(body){
+    var wrap = document.createElement('div'); wrap.className = 'table-wrap';
+    var table = document.createElement('table'); table.className = 'daytable';
+    var thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>#</th><th>Wk</th><th>Tag</th><th>Body text</th><th>Lunar day · month</th></tr>';
+    table.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    dayTableBody = tbody;
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    body.appendChild(wrap);
+    renderDayTable();
+  }
+
+  function renderDayTable(){
+    if(!dayTableBody) return;
+    ensureCellCount();
+    dayTableBody.innerHTML = '';
+    var dim = daysInMonth(state.year, state.month);
+    var start = state.startOverride == null ? firstWeekday(state.year, state.month) : state.startOverride;
+    var overflowCut = Math.max(0, start + dim - 35);
+    var normalCount = dim - overflowCut;
+    for(var d=1; d<=dim; d++){
+      (function(d){
+        var wk = (start + d - 1) % 7;
+        var tr = document.createElement('tr');
+        if(d > normalCount) tr.className = 'overflow-row';
+        var cell = state.cells[d];
+
+        var tdNum = document.createElement('td'); tdNum.className = 'daynum'; tdNum.textContent = d;
+        var tdWk = document.createElement('td'); tdWk.className = 'wk'; tdWk.textContent = WEEKDAYS_SHORT[wk];
+
+        var tdTag = document.createElement('td'); tdTag.className = 'tag-cell';
+        var tagInp = document.createElement('input');
+        tagInp.type = 'text'; tagInp.maxLength = 4; tagInp.value = cell.tag;
+        tagInp.addEventListener('input', onChange(function(){ cell.tag = tagInp.value; }));
+        tdTag.appendChild(tagInp);
+
+        var tdBody = document.createElement('td'); tdBody.className = 'body-cell';
+        var bodyInp = document.createElement('textarea');
+        bodyInp.rows = 1; bodyInp.value = cell.body;
+        bodyInp.addEventListener('input', onChange(function(){ cell.body = bodyInp.value; }));
+        tdBody.appendChild(bodyInp);
+
+        var tdLunar = document.createElement('td'); tdLunar.className = 'lunar-cell';
+        var lunarInp = document.createElement('input');
+        lunarInp.type = 'text'; lunarInp.value = cell.lunar;
+        lunarInp.addEventListener('input', onChange(function(){ cell.lunar = lunarInp.value; }));
+        tdLunar.appendChild(lunarInp);
+
+        tr.appendChild(tdNum); tr.appendChild(tdWk); tr.appendChild(tdTag); tr.appendChild(tdBody); tr.appendChild(tdLunar);
+        dayTableBody.appendChild(tr);
+      })(d);
+    }
+  }
+
+  function buildBackgroundFields(body){
+    var bg = state.background;
+
+    var row = el('div', null); row.className = 'field-row';
+    var colorInp = document.createElement('input');
+    colorInp.type = 'color'; colorInp.value = bg.color || '#ffffff';
+    colorInp.addEventListener('input', onChange(function(){ bg.color = colorInp.value; }));
+    row.appendChild(field('Background color', colorInp));
+
+    var resetBtn = document.createElement('button');
+    resetBtn.className = 'btn btn-sm'; resetBtn.style.alignSelf = 'flex-end';
+    resetBtn.textContent = 'Reset to white';
+    resetBtn.addEventListener('click', onChange(function(){ colorInp.value = '#ffffff'; bg.color = '#ffffff'; }));
+    row.appendChild(resetBtn);
+    body.appendChild(row);
+
+    var fileInp = document.createElement('input');
+    fileInp.type = 'file'; fileInp.accept = 'image/*';
+    fileInp.addEventListener('change', function(){
+      var f = fileInp.files && fileInp.files[0];
+      if(!f) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        bg.imageDataUrl = reader.result;
+        bg.imageName = f.name;
+        persist(); scheduleRender(); refreshBackgroundExtras();
+      };
+      reader.readAsDataURL(f);
+    });
+    body.appendChild(field('Texture or image (optional)', fileInp,
+      'Sits over the color, full-bleed behind the calendar. Stays on your device — nothing is uploaded anywhere.'));
+
+    var extras = document.createElement('div');
+    extras.style.display = 'flex'; extras.style.flexDirection = 'column'; extras.style.gap = '10px';
+    body.appendChild(extras);
+
+    function refreshBackgroundExtras(){
+      extras.innerHTML = '';
+      if(!bg.imageDataUrl) return;
+
+      var nameRow = el('div', { fontSize:'11.5px', color:'var(--muted)', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px' });
+      nameRow.appendChild(el('span', null, { text: bg.imageName || 'image' }));
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'btn btn-sm'; removeBtn.textContent = 'Remove image';
+      removeBtn.addEventListener('click', function(){
+        bg.imageDataUrl = null; bg.imageName = '';
+        fileInp.value = '';
+        persist(); scheduleRender(); refreshBackgroundExtras();
+      });
+      nameRow.appendChild(removeBtn);
+      extras.appendChild(nameRow);
+
+      var fitSel = document.createElement('select');
+      [['cover','Cover (fill, may crop)'],['contain','Contain (fit inside)'],['tile','Tile (repeat as texture)']].forEach(function(opt){
+        var o = document.createElement('option'); o.value = opt[0]; o.textContent = opt[1];
+        if(bg.fit===opt[0]) o.selected = true;
+        fitSel.appendChild(o);
+      });
+      fitSel.addEventListener('change', onChange(function(){ bg.fit = fitSel.value; }));
+      extras.appendChild(field('Image fit', fitSel));
+
+      var opacityWrap = document.createElement('div');
+      opacityWrap.className = 'field';
+      var opacityInp = document.createElement('input');
+      opacityInp.type = 'range'; opacityInp.min = 0; opacityInp.max = 100; opacityInp.value = bg.opacity;
+      opacityInp.style.width = '100%';
+      var opacityLbl = document.createElement('label');
+      opacityLbl.textContent = 'Image opacity — ' + bg.opacity + '%';
+      opacityInp.addEventListener('input', onChange(function(){
+        bg.opacity = parseInt(opacityInp.value,10);
+        opacityLbl.textContent = 'Image opacity — ' + bg.opacity + '%';
+      }));
+      opacityWrap.appendChild(opacityLbl);
+      opacityWrap.appendChild(opacityInp);
+      extras.appendChild(opacityWrap);
+    }
+    refreshBackgroundExtras();
+  }
+
+  function buildFootnote(body){
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = state.footnote;
+    inp.addEventListener('input', onChange(function(){ state.footnote = inp.value; }));
+    body.appendChild(field('Line below the grid', inp));
+  }
+
+  function buildControls(){
+    controlsMount.innerHTML = '';
+    controlsMount.appendChild(makeSection('Page setup', true, buildPageSetup));
+    controlsMount.appendChild(makeSection('Background', true, buildBackgroundFields));
+    controlsMount.appendChild(makeSection('Header text', true, buildHeaderFields));
+    controlsMount.appendChild(makeSection('Weekday row', false, buildWeekdayFields));
+    controlsMount.appendChild(makeSection('Lunar month tool', true, buildLunarTool));
+    controlsMount.appendChild(makeSection('Days — tag, text & lunar date', true, buildDayTable));
+    controlsMount.appendChild(makeSection('Footnote', false, buildFootnote));
+  }
+
+  function rebuildControlsPreservingOpen(){
+    var openFlags = Array.prototype.map.call(
+      controlsMount.querySelectorAll('details.section'), function(d){ return d.open; }
+    );
+    buildControls();
+    var sections = controlsMount.querySelectorAll('details.section');
+    openFlags.forEach(function(open, i){ if(sections[i]) sections[i].open = open; });
+  }
+
+  /* ---------- export ---------- */
+  var exportSandbox = document.getElementById('exportSandbox');
+  var exportBtn = document.getElementById('exportBtn');
+  var exportStatus = document.getElementById('exportStatus');
+  var downloadsCap = null;
+  if(window.claude && window.claude.use){
+    window.claude.use('downloads').then(function(cap){ downloadsCap = cap; }).catch(function(){});
+  }
+
+  function setStatus(msg){ exportStatus.textContent = msg; }
+
+  exportBtn.addEventListener('click', function(){
+    exportBtn.disabled = true;
+    setStatus('Rendering at full resolution…');
+    requestAnimationFrame(function(){
+      setTimeout(function(){ doExport(); }, 20 );
+    });
+  });
+
+  function doExport(){
+    if(typeof html2canvas === 'undefined'){
+      setStatus('Export engine still loading — try again in a moment.');
+      exportBtn.disabled = false;
+      return;
+    }
+    var tpl = TEMPLATES[state.templateKey];
+    var built = buildProof(1, false);
+    exportSandbox.innerHTML = '';
+    exportSandbox.appendChild(built.page);
+
+    var run = function(){
+      html2canvas(built.page, {
+        width: tpl.fullW, height: tpl.fullH,
+        scale: 1, backgroundColor: '#ffffff', useCORS: true, logging: false
+      }).then(function(canvas){
+        setStatus('Preparing file…');
+        canvas.toBlob(function(blob){
+          exportSandbox.innerHTML = '';
+          if(!blob){ setStatus('Export failed — try again.'); exportBtn.disabled=false; return; }
+          var fname = MONTHS[state.month] + '-' + state.year + '-month-grid-' + state.templateKey + 'in.png';
+          if(downloadsCap){
+            downloadsCap.save({ filename: fname, data: blob }).then(function(){
+              setStatus('Saved ' + fname);
+              exportBtn.disabled = false;
+            }).catch(function(err){
+              setStatus(err && err.code === 'declined' ? 'Save cancelled.' : 'Could not save file.');
+              exportBtn.disabled = false;
+            });
+          } else {
+            var blobUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = blobUrl; a.download = fname;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 4000);
+            setStatus('Saved ' + fname);
+            exportBtn.disabled = false;
+          }
+        }, 'image/png');
+      }).catch(function(err){
+        exportSandbox.innerHTML = '';
+        setStatus('Export failed.');
+        exportBtn.disabled = false;
+      });
+    };
+
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(run).catch(run);
+    } else { run(); }
+  }
+
+  /* ---------- init ---------- */
+  state = loadState();
+  ensureCellCount();
+  buildControls();
+  scheduleRender();
+})();
+</script>
+
+</body></html>
