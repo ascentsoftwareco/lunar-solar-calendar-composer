@@ -5,6 +5,7 @@ This is an app for creating calendar grids that combine the Gregorian calendar a
 It was designed for the traditional biblical/rabinic Hebrew lunar calendar, but it is flexible enough that any lunar calendar can be used. 
 
 Features:
+- Data is stored locally.
 - Export to PNG.
 - Two size options for the final image, 8.5" x 11"  14" x 11." In addition to the standard US Letter size, they coincide with Printify's (print-on-demand) "Wall Calendars (Blank)" catalog item, including the required margins, etc. https://printify.com/
 - Dates have customizable text body (holidays, etc.) and tag.
