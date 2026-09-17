@@ -1,4 +1,4 @@
-# lunisolar-calendar
+# Lunar-Solar Calendar Composer
 
 This is an app for creating calendar grids that combine the Gregorian calendar and a lunar calendar. 
 
