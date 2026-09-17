@@ -19,5 +19,7 @@ Features:
 Example:
 <img width="3375" height="2625" alt="April-2027-month-grid-11x8 5in" src="https://github.com/user-attachments/assets/ee7f85fa-609d-420c-96ae-ec423a27d55b" />
 
-Vibe coded as a Claude artifact.
+A full calendar can be purchased here:
+https://ascentlaserengraving.etsy.com/listing/4576807261/wall-calendars-blank
 
+Vibe coded using Claude.
