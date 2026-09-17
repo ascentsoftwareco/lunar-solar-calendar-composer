@@ -1,6 +1,6 @@
 # Lunar-Solar Calendar Composer
 
-This is an app for creating calendar grids that combine the Gregorian calendar and a lunar calendar. 
+This is an app for creating calendar grids that combine the Gregorian calendar and a lunar (or lunisolar) calendar.
 
 It was designed for the traditional biblical/rabinic Hebrew lunar calendar, but it is flexible enough that any lunar calendar can be used. 
 
